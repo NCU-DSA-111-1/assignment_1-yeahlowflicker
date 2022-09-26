@@ -1,5 +1,8 @@
+//  Run "gcc xor.c -lm genann.c -lm" to compile
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <math.h>
 #include <assert.h>
@@ -96,22 +99,22 @@ void train_neural_network(genann* neural_network, double** inputs, double* outpu
 
 
 //  Takes an input array and obtain the checksum
-double calculate_checksum(genann* neural_network, double* input) {
+double calculate_checksum(genann* neural_network, double* input, int check_input_size) {
     //  An array of double with length 2
     //  first element: current checksum
     //  second element: current input digit
     double* checksum = malloc(sizeof(double) * 2);
+    *(checksum + 0) = *(checksum + 1) = 0;
 
-    //  "4" is hard-coded
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < check_input_size; ++i) {
         //  Assign the current input digit to the second element
         *(checksum + 1) = *(input + i);
 
-        //  Obtain XOR result using the neural network, then store the result to the first element
-        *(checksum + 0) = *genann_run(neural_network, checksum);
-
         //  Log the XOR process
         printf("%f ^ %f\n", round(*(checksum + 0)), *(checksum + 1));
+
+        //  Obtain XOR result using the neural network, then store the result to the first element
+        *(checksum + 0) = *genann_run(neural_network, checksum);
     }
 
     //  Return the first element, which is the final checksum value
@@ -157,22 +160,21 @@ int main(int argc, char *argv[])
     train_neural_network(neural_network, inputs, outputs, outputFile);
 
 
-    //  Hard-code an input array for calculating the checksum
-    printf("\n");
-    double* check_input = malloc(sizeof(double) * 4);
-    *(check_input + 0) = 1;
-    *(check_input + 1) = 1;
-    *(check_input + 2) = 0;
-    *(check_input + 3) = 0;
+    //  Request a test value from the user
+    char test_input[100];
+    printf("\n\nPlease enter a binary value for the system to calculate the checksum: ");
+    scanf("%s", test_input);
 
-    //  Print the hard-coded input
-    for (int i = 0; i < 4; ++i) {
-        printf("%f", *(check_input + i));
+
+    //  Convert the user input argument to integer array
+    int test_input_length = strlen(test_input);
+    double* check_input = (double*)malloc(sizeof(double) * test_input_length);
+    for (int i = 0; i < test_input_length; ++i) {
+        *(check_input + i) = test_input[i] == '0' ? 0.0 : 1.0;
     }
-    printf("\n");
 
     //  Calculate and output the checksum
-    printf("\nChecksum:\n%f\n", calculate_checksum(neural_network, check_input));
+    printf("\nChecksum:\n%f\n", calculate_checksum(neural_network, check_input, test_input_length));
 
     release_memory(neural_network, inputs, outputs);
 
