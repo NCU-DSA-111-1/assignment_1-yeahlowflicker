@@ -8,6 +8,7 @@
 #include <assert.h>
 #include "genann.h"
 
+
 #define SINGLE_INPUT_SIZE 2
 #define SINGLE_OUTPUT_SIZE 1
 #define DATASET_COUNT 4
@@ -16,9 +17,10 @@
 #define TRAINING_ITERATIONS 10000
 #define LEARNING_RATE 5.8
 #define LOG_ERROR_INTERVAL 100
+#define MAX_TEST_INPUT_LENGTH 100
 
 
-
+//  Global file pointers
 FILE* datasetFile = NULL;
 FILE* outputFile = NULL;
 
@@ -34,6 +36,8 @@ FILE* initialize_file(FILE *file, char* fileName, char* fileMode) {
 //  Retrieve dataset from dataset file
 //  then insert the data to inputs and outputs array
 void load_datasets(FILE* datasetFile, double** inputs, double* outputs) {
+    assert(datasetFile != NULL);
+
     for (int i = 0; i < DATASET_COUNT; ++i) {
         for (int j = 0; j < SINGLE_INPUT_SIZE; ++j)
             fscanf(datasetFile, "%lf", (*(inputs + i) + j));
@@ -67,7 +71,8 @@ double train_single_neuron(genann* neural_network, double* input_pointer, double
 //  Log the error during a specific training epoch
 //  it will display the value in the console, as well as writing to the output file
 void log_train_process(int epoch, double totalError, FILE* outputFile) {
-    printf("#%d:\t%.12lf\n", epoch, totalError);
+    printf("Epoch #%d:\t%.12lf\n", epoch, totalError);
+    assert(outputFile != NULL);
     fprintf(outputFile, "%.12lf\n", totalError);
 }
 
@@ -93,32 +98,66 @@ void train_neural_network(genann* neural_network, double** inputs, double* outpu
     //  Initialize the neural network randomly, using the current time
     srand(time(0));
 
+    //  Print training header
+    printf("\n\n=== NEURAL NETWORK TRAINING ===\n\n");
+
+    //  Train the network repeatedly
     for (int epoch = 0; epoch < TRAINING_ITERATIONS; ++epoch)
         train_once(neural_network, inputs, outputs, outputFile, epoch);
 }
 
 
 //  Takes an input array and obtain the checksum
-double calculate_checksum(genann* neural_network, double* input, int check_input_size) {
+double evaluate_checksum(genann* neural_network, double* input, int check_input_size) {
     //  An array of double with length 2
     //  first element: current checksum
     //  second element: current input digit
     double* checksum = malloc(sizeof(double) * 2);
     *(checksum + 0) = *(checksum + 1) = 0;
 
+    //  Print the list headers
+    printf("\n===================\n");
+    printf("Checksum | Input\n-------------------\n");
+
     for (int i = 0; i < check_input_size; ++i) {
         //  Assign the current input digit to the second element
         *(checksum + 1) = *(input + i);
 
         //  Log the XOR process
-        printf("%f ^ %f\n", round(*(checksum + 0)), *(checksum + 1));
+        printf("     %.0f   ^   %.0f\n", round(*(checksum + 0)), round(*(checksum + 1)));
 
         //  Obtain XOR result using the neural network, then store the result to the first element
         *(checksum + 0) = *genann_run(neural_network, checksum);
     }
+    printf("===================\n");
+
+    free(input);
 
     //  Return the first element, which is the final checksum value
     return round(*(checksum + 0));
+}
+
+
+//  The entry point to the checksum algorithm
+double obtain_checksum(genann* neural_network) {
+    //  Define char array and request user input
+    char* test_input = malloc(MAX_TEST_INPUT_LENGTH * sizeof(char));
+    printf("\n\nPlease enter a binary value for the system to calculate the checksum: ");
+    scanf("%s", test_input);
+
+    //  Compute the length of the user input using strlen()
+    int test_input_length = strlen(test_input);
+
+    //  Convert user's string input argument to integer array
+    double* check_input = (double*)malloc(sizeof(double) * test_input_length);
+    for (int i = 0; i < test_input_length; ++i)
+        *(check_input + i) = test_input[i] == '0' ? 0 : 1;
+
+    //  Release the memory allocated by the input string
+    free(test_input);
+
+    //  Calculate the checksum and return the result
+    return evaluate_checksum(neural_network, check_input, test_input_length);
 }
 
 
@@ -132,50 +171,33 @@ void release_memory(genann* neural_network, double** inputs, double* outputs) {
 
 
 //  Main program
-int main(int argc, char *argv[])
-{
-    printf("Train a small neural_network to the XOR function using backpropagation.\n");
-
-
-    //  Input 2D array
+int main(int argc, char *argv[]) {
+    //  Define and initialize input 2D array
     double** inputs = (double**)malloc(sizeof(double*) * DATASET_COUNT);
     for (int i = 0; i < DATASET_COUNT; ++i)
         *(inputs + i) = (double*)malloc(sizeof(double) * SINGLE_INPUT_SIZE);
 
-    //  Output array
+    //  Define and initialize output array
     double* outputs = (double*)malloc(sizeof(double) * SINGLE_OUTPUT_SIZE);
 
-
+    //  Define and initialize files
     datasetFile = initialize_file(datasetFile, "dataset.txt", "r");
     outputFile = initialize_file(outputFile, "output.txt", "w+");
 
-
+    //  Load given datasets from file
     load_datasets(datasetFile, inputs, outputs);
-
 
     // Define the neural network
     genann *neural_network = genann_init(SINGLE_INPUT_SIZE, HIDDEN_LAYER_COUNT, SINGLE_HIDDEN_LAYER_NEURON_COUNT, SINGLE_OUTPUT_SIZE);
 
-
+    //  Train the neural network
     train_neural_network(neural_network, inputs, outputs, outputFile);
 
-
-    //  Request a test value from the user
-    char test_input[100];
-    printf("\n\nPlease enter a binary value for the system to calculate the checksum: ");
-    scanf("%s", test_input);
-
-
-    //  Convert the user input argument to integer array
-    int test_input_length = strlen(test_input);
-    double* check_input = (double*)malloc(sizeof(double) * test_input_length);
-    for (int i = 0; i < test_input_length; ++i) {
-        *(check_input + i) = test_input[i] == '0' ? 0.0 : 1.0;
-    }
-
     //  Calculate and output the checksum
-    printf("\nChecksum:\n%f\n", calculate_checksum(neural_network, check_input, test_input_length));
+    double obtained_checksum = obtain_checksum(neural_network);
+    printf("\nChecksum result:\n%.0f\n", round(obtained_checksum));
 
+    //  After operation, release the allocated memory
     release_memory(neural_network, inputs, outputs);
 
     return 0;
