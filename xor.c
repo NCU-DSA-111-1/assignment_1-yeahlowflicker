@@ -51,12 +51,6 @@ double mean_abs_error(double expected_output, double predicted_output) {
     return fabs(expected_output - predicted_output);
 }
 
-//  Calculate the Mean Square Error (MSE)
-//  used to calculate training error
-double mean_square_error(double expected_output, double predicted_output) {
-    return pow(expected_output - predicted_output, 2);
-}
-
 
 //  Train a single neuron and get the training error
 //  after calling genann_train(), a predicted_output is calculated using genann_run()
