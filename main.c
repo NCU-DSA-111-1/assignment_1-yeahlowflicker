@@ -16,7 +16,7 @@
 #define HIDDEN_LAYER_COUNT 1
 #define SINGLE_HIDDEN_LAYER_NEURON_COUNT 2
 #define TRAINING_ITERATIONS 100000
-#define LEARNING_RATE 0.3
+#define LEARNING_RATE 3.0
 #define LOG_ERROR_INTERVAL 100
 #define MAX_TEST_INPUT_LENGTH 100
 
@@ -40,12 +40,12 @@ int main(int argc, char *argv[]) {
     srand(time(0));
 
     //  Define and initialize input 2D array
-    double** inputs = (double**)malloc(sizeof(double*) * DATASET_COUNT);
+    double** inputs = (double**)calloc(DATASET_COUNT, sizeof(double*));
     for (int i = 0; i < DATASET_COUNT; ++i)
-        *(inputs + i) = (double*)malloc(sizeof(double) * SINGLE_INPUT_SIZE);
+        *(inputs + i) = (double*)calloc(SINGLE_INPUT_SIZE, sizeof(double));
 
     //  Define and initialize output array
-    double* outputs = (double*)malloc(sizeof(double) * SINGLE_OUTPUT_SIZE);
+    double* outputs = (double*)calloc(SINGLE_OUTPUT_SIZE, sizeof(double));
 
     //  Define and initialize files
     datasetFile = initialize_file(datasetFile, "dataset.txt", "r");

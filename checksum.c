@@ -12,7 +12,7 @@ double evaluate_checksum(genann* neural_network, double* input, int check_input_
     //  An array of double with length 2
     //  first element: current checksum
     //  second element: current input digit
-    double* checksum = malloc(sizeof(double) * 2);
+    double* checksum = calloc(2, sizeof(double));
     *(checksum + 0) = *(checksum + 1) = 0;
 
     //  Print the list headers
@@ -41,7 +41,7 @@ double evaluate_checksum(genann* neural_network, double* input, int check_input_
 //  The entry point to the checksum algorithm
 double obtain_checksum(genann* neural_network, int max_test_input_length) {
     //  Define char array and request user input
-    char* test_input = malloc(max_test_input_length * sizeof(char));
+    char* test_input = calloc(max_test_input_length, sizeof(char));
     printf("\n\nPlease enter a binary value for the system to calculate the checksum: ");
     scanf("%s", test_input);
 
@@ -49,7 +49,7 @@ double obtain_checksum(genann* neural_network, int max_test_input_length) {
     int test_input_length = strlen(test_input);
 
     //  Convert user's string input argument to integer array
-    double* check_input = (double*)malloc(sizeof(double) * test_input_length);
+    double* check_input = (double*)calloc(test_input_length, sizeof(double));
     for (int i = 0; i < test_input_length; ++i)
         *(check_input + i) = test_input[i] == '0' ? 0 : 1;
 
