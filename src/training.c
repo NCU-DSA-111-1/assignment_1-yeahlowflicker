@@ -1,3 +1,19 @@
+/*
+
+training.c: The neural network training module
+
+This software is provided 'as-is', without any express or implied warranty.
+In no event will the authors be held liable for any damages arising from the
+use of this software.
+
+This project is created for the 1st assignemnt of the Data Structure
+class (Fall 2022) of the NCU Communication Engineering Department.
+
+The project is built and owned by Cheng Yu Hin (Stu. no. 110503534).
+It may not actively maintained and should be kept private whenever possible.
+
+*/
+
 #include "training.h"
 
 #include <stdio.h>
