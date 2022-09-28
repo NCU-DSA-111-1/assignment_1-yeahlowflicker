@@ -13,7 +13,7 @@ This project belongs to CHENG Yu Hin, and is used as the assignment for the Data
 
 ## Compile & Run
 
-The program can be compiled using the following command:
+The program can be compiled using the following command (switch to the src folder beforehand):
 
 `gcc main.c -o main.out -lm fileops.c -lm training.c -lm checksum.c -lm genann.c -lm`
 
