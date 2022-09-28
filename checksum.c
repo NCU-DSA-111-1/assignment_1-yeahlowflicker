@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <math.h>
 #include <string.h>
 #include "genann.h"
@@ -47,6 +48,7 @@ double obtain_checksum(genann* neural_network, int max_test_input_length) {
 
     //  Compute the length of the user input using strlen()
     int test_input_length = strlen(test_input);
+    assert(test_input_length <= max_test_input_length);
 
     //  Convert user's string input argument to integer array
     double* check_input = (double*)calloc(test_input_length, sizeof(double));
